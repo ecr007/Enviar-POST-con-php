@@ -11,7 +11,11 @@ $opts = array('http' =>
     array(
         'method'  => 'POST',
         'header'  => 'Content-type: application/x-www-form-urlencoded',
-        'content' => $postdata
+        'content' => $postdata,
+        "ssl"=>array(
+	        "verify_peer"=>false,
+	        "verify_peer_name"=>false,
+	    ),
     )
 );
 
