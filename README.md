@@ -29,3 +29,45 @@ curl_close($curl);
 
 return $jsonResponse['access_token'];
   ```
+
+## GET
+
+```php
+$url = "https://{$shop}/admin/api/{$api_version}/{$resource}.json";
+
+$curlOptions = array(
+	CURLOPT_RETURNTRANSFER => TRUE
+);
+
+if ($method == 'GET') {
+	if (!is_null($params)) {
+		$url = $url . "?" . http_build_query($params);
+	}
+} else {
+	$curlOptions[CURLOPT_CUSTOMREQUEST] = $method;
+}
+
+$curlOptions[CURLOPT_URL] = $url;
+
+$requestHeaders = array(
+	"X-Shopify-Access-Token: ${token}",
+	"Accept: application/json"
+);
+
+if ($method == 'POST' || $method == 'PUT') {
+	$requestHeaders[] = "Content-Type: application/json";
+
+	if (!is_null($params)) {
+		$curlOptions[CURLOPT_POSTFIELDS] = json_encode($params);
+	}
+}
+
+$curlOptions[CURLOPT_HTTPHEADER] = $requestHeaders;
+
+$curl = curl_init();
+curl_setopt_array($curl, $curlOptions);
+$response = curl_exec($curl);
+curl_close($curl);
+
+return json_decode($response, TRUE);
+```
