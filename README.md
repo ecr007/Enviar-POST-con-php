@@ -1,73 +1,51 @@
 # Enviar-POST-con-php
 Enviar datos por POST usando PHP
 
-## POST Con CURL
+## REQUEST Con CURL
 
 ```php
-$query = array(
-		'client_id' => $apiKey,
-		'client_secret' => $secret,
-		'code' => $code
-);
+function doCurl($url, $post = null, $headers = null, $type = "POST")
+{
+	$ch = curl_init();
 
-// Build access token URL
-$access_token_url = "https://{$shop}/admin/oauth/access_token";
-
-// Configure curl client and execute request
-$curl = curl_init();
-$curlOptions = array(
-  	CURLOPT_RETURNTRANSFER => TRUE,
-		CURLOPT_URL => $access_token_url,
-		CURLOPT_POSTFIELDS => http_build_query($query)
-);
-
-curl_setopt_array($curl, $curlOptions);
-
-$jsonResponse = json_decode(curl_exec($curl), TRUE);
-
-curl_close($curl);
-
-return $jsonResponse['access_token'];
-  ```
-
-## GET
-
-```php
-$url = "https://{$shop}/admin/api/{$api_version}/{$resource}.json";
-
-$curlOptions = array(
-	CURLOPT_RETURNTRANSFER => TRUE
-);
-
-if ($method == 'GET') {
-	if (!is_null($params)) {
-		$url = $url . "?" . http_build_query($params);
+	if ($headers) {
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 	}
-} else {
-	$curlOptions[CURLOPT_CUSTOMREQUEST] = $method;
-}
 
-$curlOptions[CURLOPT_URL] = $url;
-
-$requestHeaders = array(
-	"X-Shopify-Access-Token: ${token}",
-	"Accept: application/json"
-);
-
-if ($method == 'POST' || $method == 'PUT') {
-	$requestHeaders[] = "Content-Type: application/json";
-
-	if (!is_null($params)) {
-		$curlOptions[CURLOPT_POSTFIELDS] = json_encode($params);
+	if ($type == "POST") {
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+		curl_setopt($ch, CURLOPT_URL, $url);
 	}
+
+	if ($type == "GET") {
+		if ($post) {
+			curl_setopt($ch, CURLOPT_URL, $url . "?" . http_build_query($post));
+		} else {
+			curl_setopt($ch, CURLOPT_URL, $url);
+		}
+	}
+
+	if ($type == "PUT") {
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+	}
+
+	curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+	curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+
+	$output = curl_exec($ch);
+	curl_close($ch);
+
+	//    if($_SESSION['LOGIN_ADMIN']['user_id']=="1934") {
+	////        echo curl_error($ch);
+	////        print_r(curl_getinfo($ch));
+	////        echo "output: ".$output;
+	//    }
+
+	return $output;
 }
-
-$curlOptions[CURLOPT_HTTPHEADER] = $requestHeaders;
-
-$curl = curl_init();
-curl_setopt_array($curl, $curlOptions);
-$response = curl_exec($curl);
-curl_close($curl);
-
-return json_decode($response, TRUE);
 ```
